@@ -17,8 +17,8 @@ const OMIT_FILES = { stnkPhotoUrl: true, photoUrl: true } as const;
 @Injectable()
 export class VehiclesService {
   constructor(
-    private prisma: PrismaService,
-    private storage: StorageService,
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
   ) {}
 
   async create(
@@ -32,11 +32,18 @@ export class VehiclesService {
 
     const partner = await this.prisma.partner.findUnique({ where: { userId } });
     if (!partner) {
-      throw new ForbiddenException('Ajukan diri sebagai partner terlebih dahulu');
+      throw new ForbiddenException(
+        'Ajukan diri sebagai partner terlebih dahulu',
+      );
     }
     // Kendaraan boleh ditambahkan saat PENDING (syarat persetujuan) atau APPROVED
-    if (partner.status !== PartnerStatus.PENDING && partner.status !== PartnerStatus.APPROVED) {
-      throw new ForbiddenException('Status partner tidak memungkinkan menambah kendaraan');
+    if (
+      partner.status !== PartnerStatus.PENDING &&
+      partner.status !== PartnerStatus.APPROVED
+    ) {
+      throw new ForbiddenException(
+        'Status partner tidak memungkinkan menambah kendaraan',
+      );
     }
 
     const taken = await this.prisma.vehicle.findUnique({
@@ -109,12 +116,14 @@ export class VehiclesService {
     });
     if (!vehicle) throw new NotFoundException('Kendaraan tidak ditemukan');
 
-    const isAdmin = user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN;
+    const isAdmin =
+      user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN;
     if (!isAdmin && vehicle.partner.userId !== user.userId) {
       throw new ForbiddenException();
     }
 
-    const key = kind === VehicleFileKind.STNK ? vehicle.stnkPhotoUrl : vehicle.photoUrl;
+    const key =
+      kind === VehicleFileKind.STNK ? vehicle.stnkPhotoUrl : vehicle.photoUrl;
     if (!key) throw new NotFoundException('File tidak ditemukan');
     return this.storage.open(key);
   }

@@ -15,7 +15,7 @@ import { UpdatePromoDto } from './dto/update-promo.dto.js';
 
 @Injectable()
 export class PricingService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   // ---------- estimasi harga ----------
 
@@ -40,7 +40,8 @@ export class PricingService {
     }
 
     const billedDistanceKm = Math.max(distanceKm, Number(zone.minDistance));
-    const basePrice = Number(zone.baseFare) + Number(zone.perKmRate) * billedDistanceKm;
+    const basePrice =
+      Number(zone.baseFare) + Number(zone.perKmRate) * billedDistanceKm;
 
     let discountAmount = 0;
     let appliedPromo: { code: string; id: string } | null = null;
@@ -67,7 +68,9 @@ export class PricingService {
   // Dipanggil terpisah oleh modul orders nanti saat order benar-benar dibuat,
   // supaya validitas promo dicek ulang (bukan cuma dipercaya dari hasil estimate sebelumnya).
   async validatePromoForAmount(code: string, orderAmount: number) {
-    const promo = await this.prisma.promoCode.findUnique({ where: { code: code.toUpperCase() } });
+    const promo = await this.prisma.promoCode.findUnique({
+      where: { code: code.toUpperCase() },
+    });
     const now = new Date();
 
     if (
@@ -77,7 +80,9 @@ export class PricingService {
       now > promo.validUntil ||
       (promo.usageLimit !== null && promo.usedCount >= promo.usageLimit)
     ) {
-      throw new BadRequestException('Kode promo tidak valid atau sudah tidak berlaku');
+      throw new BadRequestException(
+        'Kode promo tidak valid atau sudah tidak berlaku',
+      );
     }
     if (promo.minOrderValue && orderAmount < Number(promo.minOrderValue)) {
       throw new BadRequestException(
@@ -92,7 +97,8 @@ export class PricingService {
     amount: number,
   ): number {
     const value = Number(promo.value);
-    const raw = promo.type === PromoType.PERCENTAGE ? (amount * value) / 100 : value;
+    const raw =
+      promo.type === PromoType.PERCENTAGE ? (amount * value) / 100 : value;
     const cap = promo.maxDiscount ? Number(promo.maxDiscount) : Infinity;
     return Math.min(raw, cap, amount);
   }
@@ -125,7 +131,10 @@ export class PricingService {
 
   async deactivateZone(id: string) {
     await this.findZoneOrFail(id);
-    return this.prisma.pricingZone.update({ where: { id }, data: { isActive: false } });
+    return this.prisma.pricingZone.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 
   private async findZoneOrFail(id: string) {
@@ -161,7 +170,9 @@ export class PricingService {
     if (!promo) throw new NotFoundException('Kode promo tidak ditemukan');
 
     const validFrom = dto.validFrom ? new Date(dto.validFrom) : promo.validFrom;
-    const validUntil = dto.validUntil ? new Date(dto.validUntil) : promo.validUntil;
+    const validUntil = dto.validUntil
+      ? new Date(dto.validUntil)
+      : promo.validUntil;
     if (validUntil <= validFrom) {
       throw new BadRequestException('validUntil harus setelah validFrom');
     }
