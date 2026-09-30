@@ -92,7 +92,7 @@ export class VehiclesService {
       where: { id },
       include: { partner: { select: { userId: true } } },
     });
-    if (!vehicle || vehicle.partner.userId !== userId) {
+    if (vehicle?.partner.userId !== userId) {
       throw new NotFoundException('Kendaraan tidak ditemukan');
     }
     return this.prisma.vehicle.update({

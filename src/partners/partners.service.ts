@@ -117,7 +117,7 @@ export class PartnersService {
 
   async setOnline(userId: string, isOnline: boolean) {
     const partner = await this.prisma.partner.findUnique({ where: { userId } });
-    if (!partner || partner.status !== PartnerStatus.APPROVED) {
+    if (partner?.status !== PartnerStatus.APPROVED) {
       throw new ForbiddenException('Akun partner belum disetujui atau sedang disuspend');
     }
     return this.prisma.partner.update({
