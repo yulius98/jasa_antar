@@ -21,8 +21,8 @@ const OMIT_VEHICLE_FILES = { stnkPhotoUrl: true, photoUrl: true } as const;
 @Injectable()
 export class PartnersService {
   constructor(
-    private prisma: PrismaService,
-    private storage: StorageService,
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
   ) {}
 
   // ---------- sisi calon partner / partner ----------
@@ -38,7 +38,9 @@ export class PartnersService {
       throw new BadRequestException('Foto KTP dan SIM wajib diunggah');
     }
 
-    const existing = await this.prisma.partner.findUnique({ where: { userId } });
+    const existing = await this.prisma.partner.findUnique({
+      where: { userId },
+    });
     // Pendaftaran yang ditolak boleh diajukan ulang; selain itu tidak.
     if (existing && existing.status !== PartnerStatus.REJECTED) {
       throw new ConflictException('Kamu sudah mengajukan diri sebagai partner');
@@ -118,7 +120,9 @@ export class PartnersService {
   async setOnline(userId: string, isOnline: boolean) {
     const partner = await this.prisma.partner.findUnique({ where: { userId } });
     if (partner?.status !== PartnerStatus.APPROVED) {
-      throw new ForbiddenException('Akun partner belum disetujui atau sedang disuspend');
+      throw new ForbiddenException(
+        'Akun partner belum disetujui atau sedang disuspend',
+      );
     }
     return this.prisma.partner.update({
       where: { id: partner.id },
@@ -199,7 +203,9 @@ export class PartnersService {
   async reject(id: string, reason: string) {
     const partner = await this.findOrFail(id);
     if (partner.status !== PartnerStatus.PENDING) {
-      throw new ConflictException('Hanya pendaftaran berstatus PENDING yang bisa ditolak');
+      throw new ConflictException(
+        'Hanya pendaftaran berstatus PENDING yang bisa ditolak',
+      );
     }
     return this.prisma.partner.update({
       where: { id },
@@ -211,11 +217,17 @@ export class PartnersService {
   async suspend(id: string, reason: string) {
     const partner = await this.findOrFail(id);
     if (partner.status !== PartnerStatus.APPROVED) {
-      throw new ConflictException('Hanya partner berstatus APPROVED yang bisa disuspend');
+      throw new ConflictException(
+        'Hanya partner berstatus APPROVED yang bisa disuspend',
+      );
     }
     return this.prisma.partner.update({
       where: { id },
-      data: { status: PartnerStatus.SUSPENDED, isOnline: false, rejectionReason: reason },
+      data: {
+        status: PartnerStatus.SUSPENDED,
+        isOnline: false,
+        rejectionReason: reason,
+      },
       omit: OMIT_DOCS,
     });
   }
@@ -224,11 +236,15 @@ export class PartnersService {
 
   async openDocument(id: string, type: PartnerDocumentType, user: AuthUser) {
     const partner = await this.findOrFail(id);
-    const isAdmin = user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN;
+    const isAdmin =
+      user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN;
     if (!isAdmin && partner.userId !== user.userId) {
       throw new ForbiddenException();
     }
-    const key = type === PartnerDocumentType.KTP ? partner.ktpPhotoUrl : partner.simPhotoUrl;
+    const key =
+      type === PartnerDocumentType.KTP
+        ? partner.ktpPhotoUrl
+        : partner.simPhotoUrl;
     return this.storage.open(key);
   }
 

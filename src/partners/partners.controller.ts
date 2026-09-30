@@ -32,7 +32,7 @@ import { SetOnlineDto } from './dto/set-online.dto.js';
 @Controller('partners')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PartnersController {
-  constructor(private partners: PartnersService) {}
+  constructor(private readonly partners: PartnersService) {}
 
   // Customer mengajukan diri jadi partner (role tetap CUSTOMER sampai disetujui admin)
   @Post('apply')
@@ -81,29 +81,44 @@ export class PartnersController {
 
   @Patch(':id/approve')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
-  approve(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() admin: AuthUser) {
+  approve(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() admin: AuthUser,
+  ) {
     return this.partners.approve(id, admin.userId);
   }
 
   @Patch(':id/reject')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
-  reject(@Param('id', ParseUUIDPipe) id: string, @Body() dto: PartnerReasonDto) {
+  reject(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: PartnerReasonDto,
+  ) {
     return this.partners.reject(id, dto.reason);
   }
 
   @Patch(':id/suspend')
   @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
-  suspend(@Param('id', ParseUUIDPipe) id: string, @Body() dto: PartnerReasonDto) {
+  suspend(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: PartnerReasonDto,
+  ) {
     return this.partners.suspend(id, dto.reason);
   }
 
   // Dokumen identitas: hanya admin atau pemiliknya
   @Get(':id/documents/:type')
-  @Roles(UserRole.CUSTOMER, UserRole.PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(
+    UserRole.CUSTOMER,
+    UserRole.PARTNER,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  )
   @Header('Cache-Control', 'private, no-store')
   document(
     @Param('id', ParseUUIDPipe) id: string,
-    @Param('type', new ParseEnumPipe(PartnerDocumentType)) type: PartnerDocumentType,
+    @Param('type', new ParseEnumPipe(PartnerDocumentType))
+    type: PartnerDocumentType,
     @CurrentUser() user: AuthUser,
   ) {
     return this.partners.openDocument(id, type, user);

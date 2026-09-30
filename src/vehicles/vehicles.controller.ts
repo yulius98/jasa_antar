@@ -28,7 +28,7 @@ import { CreateVehicleDto } from './dto/create-vehicle.dto.js';
 @Controller('vehicles')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class VehiclesController {
-  constructor(private vehicles: VehiclesService) {}
+  constructor(private readonly vehicles: VehiclesService) {}
 
   // CUSTOMER ikut diizinkan karena pemohon yang masih PENDING rolenya belum PARTNER
   @Post()
@@ -58,12 +58,20 @@ export class VehiclesController {
 
   @Delete(':id')
   @Roles(UserRole.CUSTOMER, UserRole.PARTNER)
-  deactivate(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
+  deactivate(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: AuthUser,
+  ) {
     return this.vehicles.deactivate(user.userId, id);
   }
 
   @Get(':id/files/:kind')
-  @Roles(UserRole.CUSTOMER, UserRole.PARTNER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(
+    UserRole.CUSTOMER,
+    UserRole.PARTNER,
+    UserRole.ADMIN,
+    UserRole.SUPER_ADMIN,
+  )
   @Header('Cache-Control', 'private, no-store')
   file(
     @Param('id', ParseUUIDPipe) id: string,
