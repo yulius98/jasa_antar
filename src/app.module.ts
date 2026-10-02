@@ -9,6 +9,9 @@ import { PartnersModule } from './partners/partners.module.js';
 import { VehiclesModule } from './vehicles/vehicles.module.js';
 import { PricingModule } from './pricing/pricing.module.js';
 import { OrdersModule } from './orders/orders.module.js';
+import { TrackingModule } from './tracking/tracking.module.js';
+import { RatingsModule } from './ratings/ratings.module.js';
+import { PaymentsModule } from './payments/payments.module.js';
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { OrdersModule } from './orders/orders.module.js';
     VehiclesModule,
     PricingModule,
     OrdersModule,
+    TrackingModule,
+    RatingsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

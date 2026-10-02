@@ -8,7 +8,7 @@ export class RegisterDto {
   @IsEmail()
   email: string;
 
-  @Matches(/^(\+62|62|0)8[1-9][0-9]{7,11}$/, {
+  @Matches(/^(\+62|62|0)8[1-9]\d{7,11}$/, {
     message: 'Nomor telepon tidak valid',
   })
   phone: string;

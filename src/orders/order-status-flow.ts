@@ -23,6 +23,18 @@ export const CANCELLABLE_STATUSES: OrderStatus[] = [
   OrderStatus.EN_ROUTE_TO_PICKUP,
 ];
 
+// Status "order sedang berjalan" -- dari partner ditugaskan sampai sebelum selesai/batal.
+// Dipakai modul tracking untuk membatasi kapan titik lokasi boleh dikirim.
+export const ACTIVE_ORDER_STATUSES: OrderStatus[] = [
+  OrderStatus.DRIVER_ASSIGNED,
+  OrderStatus.EN_ROUTE_TO_PICKUP,
+  OrderStatus.ARRIVED_AT_PICKUP,
+  OrderStatus.LOADING,
+  OrderStatus.IN_TRANSIT,
+  OrderStatus.ARRIVED_AT_DROPOFF,
+  OrderStatus.UNLOADING,
+];
+
 export function isValidTransition(from: OrderStatus, to: OrderStatus): boolean {
   return (ORDER_STATUS_FLOW[from] ?? []).includes(to);
 }
